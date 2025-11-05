@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Support Cases Dashboard – Leadership View</title>
+  <style>
+  /* =========================
+     Apple Cases Dashboard — Walmart
+     Author: ChatGPT "Developer"
+     Notes: Inline comments explain each property for non‑coders
+     ========================= */
+
+  :root{
+    --bg: #0f172a;          /* primary app background (dark slate) */
+    --panel: #111827;       /* panel/background for large blocks */
+    --card: #111827;        /* card surfaces (matches panel) */
+    --surface: #0b1220;     /* darker tone used in gradient */
+    --text: #e5e7eb;        /* default text color (light gray) */
+    --muted: #9ca3af;       /* secondary/muted text */
+    --soft: #1f2937;        /* soft border / separators */
+    --border: #1f2937;      /* standard border color */
+    --accent: #60a5fa;      /* accent blue (info state) */
+    --green: #34d399;       /* success green (closed/completed) */
+    --red: #f87171;         /* error red */
+    --amber: #fbbf24;       /* warning amber */
+    --purple: #c4b5fd;      /* lavender (status badge bg) */
+  }
+
+  *{ box-sizing: border-box; /* include padding & border inside element size */ }
+
+  html, body{
+    margin:0;                               /* remove default page margins */
+    padding:0;                              /* remove default page padding */
+    background: linear-gradient(180deg,     /* subtle dark gradient background */
+                #0b1020, #0a0f1a 60%, #070b14);
+    color: var(--text);                     /* base text color */
+    font-family: -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+                 "Apple Color Emoji", "Segoe UI Emoji"; /* system fonts for clarity */
+    line-height: 1.45;                      /* comfortable text spacing */
+  }
+
+  .container{
+    max-width: 1200px;      /* limit line length for readability */
+    margin: 0 auto;         /* center the app horizontally */
+    padding: 24px;          /* breathing room around edges */
+  }
+
+  header{
+    position: relative;     /* anchor for the corner spark icon */
+    display: flex;          /* place title and owner in a row */
+    flex-wrap: wrap;        /* allow wrap on narrow screens */
+    align-items: flex-end;  /* align baseline of title/owner */
+    justify-content: space-between; /* push title left, owner right */
+    gap: 16px;              /* spacing between header blocks */
+    margin-bottom: 20px;    /* space after the header */
+  }
+
+  .brand{ display:flex; align-items:center; gap:12px; /* title + spark inline */ }
+
+  h1{
+    font-size: 28px;        /* large, readable title */
+    margin: 0;              /* remove default margins */
+    letter-spacing: 0.2px;  /* tiny spacing for polish */
+  }
+
+  .subtle{
+    color: var(--muted);    /* lighter tone for secondary text */
+    font-size: 14px;        /* smaller size to de‑emphasize */
+  }
+
+  .spark{ width:24px; height:24px;              /* small logo size */
+          flex:0 0 auto;                         /* do not stretch */
+          filter: drop-shadow(0 0 6px rgba(251,191,36,.2)); /* glow */ }
+  .spark circle{ fill:#FFC220; /* Walmart yellow */ }
+
+  /* Corner spark placed at top‑right of header */
+  .corner-spark{
+    position:absolute;      /* position relative to header */
+    top:-6px;               /* nudge upward slightly */
+    right:8px;              /* align to right edge */
+    width:28px; height:28px;/* icon size */
+    filter: drop-shadow(0 0 6px rgba(251,191,36,.25)); /* soft glow */
+    pointer-events:none;    /* ignore mouse events */
+  }
+
+  .section{ margin-top: 22px; /* space between sections */ }
+
+  .card{
+    background: radial-gradient(1200px 80% at -10% -40%, /* subtle blue glow */
+                rgba(96,165,250,.08), transparent 60%), var(--panel);
+    border: 1px solid var(--border);    /* thin outline */
+    border-radius: 16px;                /* rounded corners */
+    padding: 16px 16px;                 /* inner spacing */
+    box-shadow: 0 8px 24px rgba(0,0,0,.35); /* depth shadow */
+  }
+
+  /* Compact / short variants used for the themes table */
+  .card.compact{ padding: 12px 12px; /* slightly tighter card */ }
+  .card.compact .chart-title{ font-size: 12px; /* smaller title */ }
+  .card.compact table thead th{ font-size: 11px; padding: 8px 10px; /* compact head */ }
+  .card.compact table tbody td{ font-size: 12px; padding: 8px 10px; /* compact rows */ }
+  .card.compact.short{ padding: 6px 8px; /* even tighter variant */ }
+  .card.compact.short .chart-title{ font-size: 10.5px; margin-bottom: 4px; /* tiny title */ }
+  .card.compact.short table thead th{ font-size: 10px; padding: 4px 6px; /* tiny head */ }
+  .card.compact.short table tbody td{ font-size: 11px; padding: 4px 6px; line-height: 1.15; /* tight rows */ }
+
+  .grid{ display: grid; gap: 14px; /* grid layout with spacing */ }
+  .charts{ grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 3 responsive chart columns */ }
+
+  /* Chart card title row */
+  .chart-title{
+    display:flex;                      /* title + actions inline (future) */
+    align-items:center;                /* center vertically */
+    justify-content: space-between;    /* spread if actions added */
+    margin-bottom: 8px;                /* space below header */
+    font-size: 13px;                   /* small label size */
+    color: var(--muted);               /* muted label color */
+  }
+
+  /* Data table container */
+  .table-wrap{
+    overflow: auto;            /* allow scroll if table is wide */
+    border-radius: 14px;       /* rounded corners */
+    border: 1px solid var(--border); /* subtle outline */
+  }
+
+  table{
+    width: 100%;               /* table fills card */
+    border-collapse: collapse; /* merge inner borders */
+    min-width: 900px;          /* keep columns readable */
+    background: var(--panel);  /* match panel color */
+  }
+
+  thead th{
+    position: sticky;          /* keep headers visible on scroll */
+    top: 0;                    /* stick to the top of table */
+    background: rgba(10, 15, 26, 0.9); /* translucent header bar */
+    backdrop-filter: blur(4px); /* slight blur behind header */
+    text-align: left;          /* align text to left */
+    font-size: 12px;           /* compact header text */
+    color: var(--muted);       /* muted header color */
+    padding: 12px 14px;        /* header cell spacing */
+    border-bottom: 1px solid var(--border); /* divider line */
+    text-transform: uppercase; /* use small caps feel */
+    letter-spacing: .08em;     /* space letters for readability */
+  }
+
+  tbody td{
+    font-size: 14px;                         /* normal body size */
+    padding: 14px;                            /* row padding */
+    border-bottom: 1px solid rgba(255,255,255,.04); /* light row divider */
+  }
+
+  tbody tr:hover{ background: rgba(96,165,250,.05); /* highlight hovered row */ }
+
+  .badge{
+    display:inline-flex;                 /* pill + dot side by side */
+    align-items:center;                  /* vertical center */
+    gap: 8px;                            /* space between dot/text */
+    padding: 6px 10px;                   /* pill padding */
+    background: rgba(196,181,253,.12);   /* soft lavender bg */
+    color: #e9d5ff;                      /* light text color */
+    border: 1px solid rgba(196,181,253,.25); /* subtle outline */
+    border-radius: 999px;                 /* fully rounded pill */
+    font-weight: 600;                     /* semi‑bold label */
+    font-size: 12px;                      /* compact size */
+  }
+
+  .dot{
+    display:inline-block;        /* inline circle */
+    width: 10px; height: 10px;   /* size of status dot */
+    border-radius: 50%;          /* make it a circle */
+    background: var(--purple);   /* default dot color */
+    box-shadow: 0 0 0 3px rgba(196,181,253,.15); /* halo around dot */
+  }
+
+  .dot.low{  background: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.15); /* blue = low */ }
+  .dot.med{  background: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,.15); /* amber = med */ }
+  .dot.high{ background: #f87171; box-shadow: 0 0 0 3px rgba(248,113,113,.15); /* red = high */ }
+
+  .priority{ display:flex; align-items:center; gap:8px; /* dot + label inline */ }
+
+  .case-link{ color: #93c5fd; text-decoration: none; /* blue link without underline */ }
+  .case-link:hover{ text-decoration: underline; /* show underline on hover */ }
+
+  /* Small gray pill used in Resolved column */
+  .pill{
+    display:inline-block;       /* pill behaves like text */
+    padding: 6px 10px;          /* inner spacing */
+    border-radius: 999px;       /* full rounded corners */
+    border: 1px solid var(--soft); /* thin outline */
+    background: rgba(255,255,255,.03); /* subtle translucent fill */
+  }
+
+  /* Two‑column layout for Themes (left) + Donut (right) */
+  .two-col{ grid-template-columns: .85fr 1.15fr; /* make donut area a bit wider */ }
+  @media (max-width: 900px){ .two-col{ grid-template-columns: 1fr; } /* stack on phones */ }
+
+  /* Print‑friendly overrides for executive PDFs */
+  @media print{
+    body{ background: #fff; color: #111; }                 /* white page */
+    .card{ box-shadow:none; border: 1px solid #ddd; background: #fff; } /* remove heavy shadows */
+    header{ border-bottom: 1px solid #ddd; padding-bottom: 8px; }       /* simple divider */
+    .badge, .pill{ border: 1px solid #bbb; color: #111; }                /* darker outlines */
+    .table-wrap{ border:1px solid #ddd; }                                 /* table border */
+    thead th{ background:#f5f5f5; color:#333; }                           /* gray header row */
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div class="brand">
+          <svg class="spark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+            <circle cx="32" cy="32" r="5" />
+            <circle cx="32" cy="10" r="6" />
+            <circle cx="32" cy="54" r="6" />
+            <circle cx="54" cy="32" r="6" />
+            <circle cx="10" cy="32" r="6" />
+            <circle cx="48" cy="16" r="6" />
+            <circle cx="16" cy="48" r="6" />
+          </svg>
+          <h1>Apple Cases Dashboard — Walmart</h1>
+        </div>
+        <div class="subtle">This dashboard provides an overview of Apple support cases related to macOS Tahoe 26 testing within Walmart, highlighting the weekly case flow (opened vs. closed) and resolution status. As a result, we, the Mac team, do not see any major issues or showstoppers that would prevent Mac users from upgrading on December 26.</div>
+      </div>
+      <div class="subtle">Owner: Mac Engineering Team</div>
+          <svg class="corner-spark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <g fill="#FFC220">
+          <rect x="29" y="4" width="6" height="14" rx="3" />
+          <rect x="29" y="4" width="6" height="14" rx="3" transform="rotate(60 32 32)" />
+          <rect x="29" y="4" width="6" height="14" rx="3" transform="rotate(120 32 32)" />
+          <rect x="29" y="4" width="6" height="14" rx="3" transform="rotate(180 32 32)" />
+          <rect x="29" y="4" width="6" height="14" rx="3" transform="rotate(240 32 32)" />
+          <rect x="29" y="4" width="6" height="14" rx="3" transform="rotate(300 32 32)" />
+        </g>
+      </svg>
+    </header>
+
+    <!-- TRENDS & MIX -->
+    <section class="section">
+      <div class="grid charts">
+        <div class="card">
+          <div class="chart-title">Opened vs Closed (last 8 weeks)</div>
+          <!-- Simple inline SVG placeholder; replace path 'd' with real data if desired -->
+          <svg viewBox="0 0 320 140" role="img" aria-label="Opened vs Closed trend">
+            <defs>
+              <linearGradient id="fade1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(96,165,250,.45)"/>
+                <stop offset="100%" stop-color="rgba(96,165,250,0)"/>
+              </linearGradient>
+              <linearGradient id="fade2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(52,211,153,.45)"/>
+                <stop offset="100%" stop-color="rgba(52,211,153,0)"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="320" height="140" fill="none" />
+            <!-- Closed -->
+            <path d="M10 110 L50 100 L90 95 L130 80 L170 75 L210 70 L250 68 L290 66"
+                  fill="none" stroke="#34d399" stroke-width="2.5" />
+            <!-- Opened -->
+            <path d="M10 112 L50 108 L90 104 L130 100 L170 103 L210 106 L250 108 L290 112"
+                  fill="none" stroke="#60a5fa" stroke-width="2.5" />
+          </svg>
+        </div>
+        <div class="card">
+          <div class="chart-title">Backlog over time</div>
+          <svg viewBox="0 0 320 140" role="img" aria-label="Backlog trend">
+            <polyline
+              points="10,110 50,108 90,106 130,102 170,96 210,90 250,84 290,80"
+              fill="none" stroke="#93c5fd" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div class="card">
+          <div class="chart-title">Priority Distribution</div>
+          <svg viewBox="0 0 320 140" role="img" aria-label="Priority mix">
+            <!-- Stacked bar (100%) -->
+            <rect x="20" y="40" width="260" height="30" fill="#60a5fa"/>
+            <rect x="20" y="40" width="40" height="30" fill="#fbbf24"/>
+            <rect x="60" y="40" width="10" height="30" fill="#f87171"/>
+            <text x="260" y="95" font-size="12.5" fill="#9ca3af" text-anchor="middle">Low</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- THEMES -->
+    <section class="section">
+      <div class="grid two-col">
+        <div class="card compact short">
+          <div class="chart-title">Top Issue Themes (last 30–90 days)</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Theme</th>
+                  <th>Cases</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Outlook (notifications/crash)</td><td>2</td></tr>
+                <tr><td>macOS Beta</td><td>1</td></tr>
+                <tr><td>Battery Usage</td><td>1</td></tr>
+                <tr><td>VPN / Network</td><td>1</td></tr>
+                <tr><td>Certificates / Trust</td><td>1</td></tr>
+                <tr><td>Search / Spotlight</td><td>1</td></tr>
+                <tr><td>SSO / Auth</td><td>1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chart-title">Closure States</div>
+          <svg viewBox="0 0 320 140" role="img" aria-label="Closure state mix">
+            <!-- Donut chart with two segments: Completed vs Other -->
+            <circle cx="80" cy="70" r="48" fill="none" stroke="#1f2937" stroke-width="20"/>
+            <circle cx="80" cy="70" r="48" fill="none" stroke="#34d399" stroke-width="20"
+                    stroke-dasharray="220 31" stroke-linecap="butt" transform="rotate(-90 80 70)"/>
+            <circle cx="80" cy="70" r="48" fill="none" stroke="#93c5fd" stroke-width="20"
+                    stroke-dasharray="31 220" stroke-linecap="butt" transform="rotate(60 80 70)"/>
+            <g transform="translate(140,40)">
+              <rect x="0" y="0" width="12" height="12" fill="#34d399"/><text x="20" y="11" font-size="12" fill="#9ca3af">Completed</text>
+              <rect x="0" y="22" width="12" height="12" fill="#93c5fd"/><text x="20" y="33" font-size="12" fill="#9ca3af">Customer Inactivity/Other</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- CASE LIST -->
+    <section class="section">
+      <div class="card">
+        <div class="chart-title">Recent Cases (sample from screenshot)</div>
+        <div class="table-wrap">
+          <table role="table" aria-label="Recent support cases">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Resolved</th>
+                <th>Case Number</th>
+                <th>Deployed Version</th>
+                <th>Priority</th>
+                <th>Case Title</th>
+                <th>Tester Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Mac Team</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102666580404">102666580404</a></td>
+                <td>Tahoe 26.5</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Outlook Calendar Notifications</td>
+                <td>Pradeep Vempati</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Customer Inactivity</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102683143955">102683143955</a></td>
+                <td>Beta Public 8</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>macOS 26 beta: Outlook quit…</td>
+                <td>Sakol / Infosec</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Apple Team</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102688060600">102688060600</a></td>
+                <td>Beta Public 9</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Significant Battery Usage Increase o…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Apple Team</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102683248358">102683248358</a></td>
+                <td>Beta Public 8</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Questions about remediation when a…</td>
+                <td>Sakol / Infosec</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Mac Team</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102678602685">102678602685</a></td>
+                <td>Beta Public 8</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Forcepoint Root CA not trusted on…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Apple Team</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102668261746">102668261746</a></td>
+                <td>Developer 5</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Unable to search filesystem using…</td>
+                <td>Vinoth Boobalan</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Apple Team</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102667550452">102667550452</a></td>
+                <td>Developer 3</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Cisco VPN login</td>
+                <td>Paul Boellner</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Apple Team</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102653448595">102653448595</a></td>
+                <td>Developer 3</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>AppSSO will not allow users to chan…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <details class="card">
+        <summary class="chart-title">Presenter Notes (click to expand)</summary>
+        <div class="subtle"></div>
+      </details>
+    </section>
+    <!-- RESULTS FOOTER -->
+    <footer class="section">
+      <div class="card">
+        <div class="chart-title">Results Note</div>
+        <ul class="subtle">
+          <li>No showstoppers detected during Tahoe 26 testing; all observed issues resolved or low impact. Dec 26 upgrade release remains on track.</li>
+          <li>Testing across Tahoe 26.5 / Beta Public 8–9 / Dev builds shows consistent behavior. No high/critical defects observed.</li>
+          <li>No blocking patterns identified.</li>
+          <li>Readiness signal: green. Proceed with the Dec 26 upgrade to all macOS users in corporate.</li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
